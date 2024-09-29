@@ -24,7 +24,6 @@ from typing import (
     List,
     Mapping,
     Optional,
-    Set,
     Tuple,
     Type,
     TypedDict,
@@ -33,7 +32,7 @@ from typing import (
 )
 
 import attr
-from multidict import CIMultiDict, MultiDict, MultiDictProxy, istr
+from multidict import CIMultiDict, istr
 from yarl import URL
 
 from . import hdrs, http, payload
@@ -1096,17 +1095,13 @@ class ClientSession:
     def _prepare_headers(self, headers: Optional[LooseHeaders]) -> "CIMultiDict[str]":
         """Add default headers and transform it to CIMultiDict"""
         # Convert headers to MultiDict
-        result = CIMultiDict(self._default_headers)
-        if headers:
-            if not isinstance(headers, (MultiDictProxy, MultiDict)):
-                headers = CIMultiDict(headers)
-            added_names: Set[str] = set()
-            for key, value in headers.items():
-                if key in added_names:
-                    result.add(key, value)
-                else:
+        if not headers:
+            return CIMultiDict(self._default_headers)
+        result = CIMultiDict(headers)
+        if self._default_headers:
+            for key, value in self._default_headers.items():
+                if key not in result:
                     result[key] = value
-                    added_names.add(key)
         return result
 
     if sys.version_info >= (3, 11) and TYPE_CHECKING:
