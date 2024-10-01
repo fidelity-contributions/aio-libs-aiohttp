@@ -831,7 +831,7 @@ class ClientResponse(HeadersMixin):
         self.cookies = SimpleCookie()
 
         self._real_url = url
-        self._url = url.with_fragment(None)
+        self._url = url.with_fragment(None) if url.raw_fragment else url
         self._body: Optional[bytes] = None
         self._writer = writer
         self._continue = continue100  # None by default
